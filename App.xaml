@@ -4,6 +4,62 @@
              xmlns:local="clr-namespace:DataVisualizationDashboard"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+
+        <!--Colors-->
+        <SolidColorBrush x:Key="BlackColor" Color="#083353"/>
+        <SolidColorBrush x:Key="GreyColor" Color="#B7B7B7"/>
+
+
+        <Style x:Key="Title" TargetType="Label">
+            <Setter Property="Foreground" Value="Black" />
+            <Setter Property="FontSize" Value="28" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Margin" Value="40 30 0 15" />
+        </Style>
+
+
+        <Style x:Key="menuButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="#FED6CE" />
+            <Setter Property="Height" Value="45" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Margin" Value="15 0 15 5" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="10">
+                            <ContentPresenter HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#F7F6F4" />
+                    <Setter Property="Foreground" Value="#FB7657" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+
+        <Style x:Key="menuButtonText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}" />
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="20 0 0 2"/>
+        </Style>
+
+        <Style x:Key="whiteBorder" TargetType="Border">
+            <Setter Property="Background" Value="#ffffff" />
+            <Setter Property="CornerRadius" Value="15" />
+            <Setter Property="Padding" Value="20" />
+        </Style>
+
+        <Style x:Key="titleText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource BlackColor}" />
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+        
     </Application.Resources>
 </Application>
