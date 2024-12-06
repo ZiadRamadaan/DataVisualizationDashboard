@@ -150,14 +150,6 @@ namespace DataVisualizationDashboard
             LabelSelection.ItemsSource = labelColumns; // الأعمدة النصية
             ValueSelection.ItemsSource = valueColumns; // الأعمدة الرقمية
         }
-
-
-        //private void PopulateDropdowns()
-        //{
-        //    var columns = dataTable.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToList();
-        //    LabelSelection.ItemsSource = columns;
-        //    ValueSelection.ItemsSource = columns;
-        //}
         private void Generate_Click(object sender, RoutedEventArgs e)
         {
             if (LabelSelection.SelectedItem == null || ValueSelection.SelectedItem == null)
@@ -176,51 +168,64 @@ namespace DataVisualizationDashboard
         }
         private void InitializeBarChart(string xColumn, string yColumn)
         {
-            // Create lists to store the data for the X and Y axes
-            List<string> xValues = new List<string>();
-            List<double> yValues = new List<double>();
+            // استخدام Dictionary لتجميع القيم حسب الفئة (المحور X)
+            Dictionary<string, double> groupedData = new Dictionary<string, double>();
 
-            // Loop through the rows in the DataTable and extract the values
+            // تجميع البيانات
             foreach (DataRow row in dataTable.Rows)
             {
-                // Add values for the X-axis (labels)
-                xValues.Add(row[xColumn].ToString());
-                // Add values for the Y-axis (values)
-                yValues.Add(Convert.ToDouble(row[yColumn]));
+                string label = row[xColumn].ToString(); // الحصول على الفئة (اسم العمود X)
+                if (string.IsNullOrWhiteSpace(label)) continue; // تجاهل القيم الفارغة
+
+                if (double.TryParse(row[yColumn]?.ToString(), out double value)) // تحويل القيمة
+                {
+                    if (groupedData.ContainsKey(label))
+                    {
+                        groupedData[label] += value; // تجميع القيم المكررة
+                    }
+                    else
+                    {
+                        groupedData[label] = value; // إضافة قيمة جديدة
+                    }
+                }
             }
 
-            // Create a new ColumnSeries for the bar chart
+            // إنشاء قائمة من القيم المجمعة للمحور X و Y
+            List<string> xValues = groupedData.Keys.ToList(); // الفئات
+            List<double> yValues = groupedData.Values.ToList(); // القيم المجمعة
+
+            // إنشاء ColumnSeries جديدة للرسم البياني
             var columnSeries = new LiveCharts.Wpf.ColumnSeries
             {
                 Title = $"{xColumn} vs {yColumn}",
-                Values = new LiveCharts.ChartValues<double>(yValues)
+                Values = new LiveCharts.ChartValues<double>(yValues) // القيم Y
             };
 
-            // Clear any previous data on the BarChart
+            // مسح أي بيانات سابقة في BarChart
             BarChart.Series.Clear();
 
-            // Add the new series to the BarChart
+            // إضافة السلسلة الجديدة إلى BarChart
             BarChart.Series.Add(columnSeries);
 
-            // Update the X-axis with the label values
+            // تحديث المحور X بالعناوين
             BarChart.AxisX.Clear();
             var axisX = new LiveCharts.Wpf.Axis
             {
-                Title = xColumn,
-                Labels = xValues
+                Title = xColumn, // عنوان المحور
+                Labels = xValues // القيم المجمعة للمحور X
             };
             BarChart.AxisX.Add(axisX);
 
-            // Update the Y-axis (optional formatting)
+            // تحديث المحور Y (مع التنسيق الاختياري)
             BarChart.AxisY.Clear();
             var axisY = new LiveCharts.Wpf.Axis
             {
                 Title = yColumn,
-                LabelFormatter = value => $"{value:N0}" // Format Y-axis as numeric with commas
+                LabelFormatter = value => $"{value:N0}" // تنسيق القيم Y
             };
             BarChart.AxisY.Add(axisY);
         }
-        private void InitializeRowChart(string xColumn, string yColumn)
+       private void InitializeRowChart(string xColumn, string yColumn)
         {
             List<string> xValues = new List<string>();
             List<double> yValues = new List<double>();
@@ -262,44 +267,69 @@ namespace DataVisualizationDashboard
         }
         private void InitializeLineChart(string xColumn, string yColumn)
         {
-            List<string> xValues = new List<string>();
-            List<double> yValues = new List<double>();
+            // استخدام Dictionary لتجميع القيم حسب الفئات (المحور X)
+            Dictionary<string, double> groupedData = new Dictionary<string, double>();
 
+            // تجميع البيانات
             foreach (DataRow row in dataTable.Rows)
             {
-                xValues.Add(row[xColumn].ToString());
-                yValues.Add(Convert.ToDouble(row[yColumn]));
+                string label = row[xColumn].ToString(); // الحصول على الفئة (المحور X)
+                if (string.IsNullOrWhiteSpace(label)) continue; // تجاهل القيم الفارغة
+
+                if (double.TryParse(row[yColumn]?.ToString(), out double value)) // تحويل القيمة
+                {
+                    if (groupedData.ContainsKey(label))
+                    {
+                        groupedData[label] += value; // تجميع القيم المكررة
+                    }
+                    else
+                    {
+                        groupedData[label] = value; // إضافة قيمة جديدة
+                    }
+                }
             }
 
+            // استخراج القيم المجمعة والمرتبة
+            List<string> xValues = groupedData.Select(kv => kv.Key).ToList();
+            List<double> yValues = groupedData.Select(kv => kv.Value).ToList();
+
+            // إنشاء LineSeries جديدة
             var lineSeries = new LiveCharts.Wpf.LineSeries
             {
                 Title = $"{xColumn} vs {yColumn}",
-                Values = new LiveCharts.ChartValues<double>(yValues),
-                Fill = System.Windows.Media.Brushes.Transparent,
-                StrokeThickness = 3,
-                PointGeometrySize = 0
+                Values = new LiveCharts.ChartValues<double>(yValues), // القيم Y
+                Fill = System.Windows.Media.Brushes.Transparent, // عدم تلوين المساحة تحت الخط
+                StrokeThickness = 3, // سمك الخط
+                PointGeometrySize = 5 // حجم النقاط على الخط
             };
 
+            // إعداد لون الخط باستخدام تدرج لوني
             lineSeries.Stroke = new LinearGradientBrush(
-                Color.FromRgb(255, 255, 255), Color.FromRgb(40, 137, 252), 0);
+                Color.FromRgb(40, 137, 252), // اللون الأول
+                Color.FromRgb(0, 76, 153),   // اللون الثاني
+                45);                         // زاوية التدرج
 
+            // مسح البيانات القديمة من الرسم
             CartesianChart.Series.Clear();
 
+            // إضافة السلسلة الجديدة
             CartesianChart.Series.Add(lineSeries);
 
+            // إعداد المحور X
             CartesianChart.AxisX.Clear();
             var axisX = new LiveCharts.Wpf.Axis
             {
                 Title = xColumn,
-                Labels = xValues
+                Labels = xValues // القيم المجمعة
             };
             CartesianChart.AxisX.Add(axisX);
 
+            // إعداد المحور Y مع تنسيق القيم
             CartesianChart.AxisY.Clear();
             var axisY = new LiveCharts.Wpf.Axis
             {
                 Title = yColumn,
-                LabelFormatter = value => $"{value:N0}"
+                LabelFormatter = value => $"{value:N0}" // تنسيق القيم بأرقام صحيحة مع فاصلة
             };
             CartesianChart.AxisY.Add(axisY);
         }
@@ -354,15 +384,10 @@ namespace DataVisualizationDashboard
         {
 
         }
-
         private void LabelSelection_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
         {
 
         }
-        private void CloseButton_Click(object sender, RoutedEventArgs e)
-        {
-            this.Close(); // لإغلاق النافذة
-        }
-
+        
     }
 }
