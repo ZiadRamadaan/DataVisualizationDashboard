@@ -6,10 +6,12 @@
         WindowStyle="None" AllowsTransparency="True" Height="780" Width="1280">
     <Border CornerRadius="25" Padding="20" Background="#F7F6F4" MouseDown="Border_MouseDown" MouseLeftButtonDown="Border_MouseLeftButtonDown">
         <Grid>
+
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="270"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="97*"/>
+                <ColumnDefinition Width="94*"/>
+                <ColumnDefinition Width="3*"/>
             </Grid.ColumnDefinitions>
 
             <Grid.RowDefinitions>
@@ -17,8 +19,10 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
+           
 
             <!--Menu-->
+
             <Border Grid.RowSpan="3" CornerRadius="25" HorizontalAlignment="Center" Width="270" Margin="0,10,0,0">
                 <Border.Background>
                     <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -47,10 +51,10 @@
                 </StackPanel>
             </Border>
 
-            <Border Grid.ColumnSpan="2" CornerRadius="15" HorizontalAlignment="Left" Width="934" Margin="10,10,0,0" Grid.Column="1" Background="Transparent">
+            <Border Grid.ColumnSpan="2" CornerRadius="15" HorizontalAlignment="Center" Width="934" Margin="0,10,0,0" Grid.Column="1" Background="Transparent">
                 <Label Content="Data Visualization " Style="{StaticResource Title}" Margin="0,10,639,26"/>
             </Border>
-            <Border Grid.Column="1" Grid.Row="1" Style="{StaticResource whiteBorder}" Margin="20 20 20 0">
+            <Border Grid.Column="1" Grid.Row="1" Style="{StaticResource whiteBorder}" Margin="20,20,20,0">
                 <Grid Margin="10 5">
                     <!--Title-->
                     <TextBlock Text="Line chart" Style="{StaticResource titleText}"/>
@@ -96,7 +100,7 @@
                 </Grid>
             </Border>
 
-            <Border Grid.Row="2" Grid.Column="2" Style="{StaticResource whiteBorder}" Margin="0,10,0,0">
+            <Border Grid.Row="2" Grid.Column="2" Style="{StaticResource whiteBorder}" Margin="0,10,0,0" Grid.ColumnSpan="2">
                 <Grid>
                     <!--Title-->
                     <TextBlock Text="Bar chart" Style="{StaticResource titleText}" Margin="10,0,0,0"/>
@@ -147,7 +151,7 @@
                 </Grid>
             </Border>
 
-            <Border Grid.Row="1" Grid.Column="2" Style="{StaticResource whiteBorder}" Margin="0,20,0,0">
+            <Border Grid.Row="1" Grid.Column="2" Style="{StaticResource whiteBorder}" Margin="0,20,0,0" Grid.ColumnSpan="2">
                 <Grid>
                     <!--Title-->
                     <TextBlock Text="Pie chart" Style="{StaticResource titleText}" Margin="10,0,10,0"/>
