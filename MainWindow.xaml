@@ -136,15 +136,6 @@
                                     </LinearGradientBrush>
                                 </lvc:ColumnSeries.Fill>
                             </lvc:ColumnSeries>
-
-                            <lvc:ColumnSeries Values="7.5,5,4,5.5" MaxColumnWidth="10">
-                                <lvc:ColumnSeries.Fill>
-                                    <LinearGradientBrush>
-                                        <GradientStop Color="#FF6F4D" Offset="0"/>
-                                        <GradientStop Color="#ffffff" Offset="1"/>
-                                    </LinearGradientBrush>
-                                </lvc:ColumnSeries.Fill>
-                            </lvc:ColumnSeries>
                         </lvc:CartesianChart.Series>
                     </lvc:CartesianChart>
 
@@ -162,10 +153,10 @@
                         </lvc:PieChart.DataTooltip>
 
                         <lvc:PieChart.Series>
-                            <lvc:PieSeries Title="Maria" Values="3" DataLabels="True" LabelPoint="{Binding PointLabel}"/>
-                            <lvc:PieSeries Title="Charles" Values="4" DataLabels="True" LabelPoint="{Binding PointLabel}"/>
-                            <lvc:PieSeries Title="Frida" Values="6" DataLabels="True" LabelPoint="{Binding PointLabel}"/>
-                            <lvc:PieSeries Title="Frederic" Values="2" DataLabels="True" LabelPoint="{Binding PointLabel}"/>
+                            <lvc:PieSeries  Values="3" DataLabels="True" LabelPoint="{Binding PointLabel}"/>
+                            <lvc:PieSeries  Values="4" DataLabels="True" LabelPoint="{Binding PointLabel}"/>
+                            <lvc:PieSeries  Values="6" DataLabels="True" LabelPoint="{Binding PointLabel}"/>
+                            <lvc:PieSeries  Values="2" DataLabels="True" LabelPoint="{Binding PointLabel}"/>
                         </lvc:PieChart.Series>
                     </lvc:PieChart>
                 </Grid>

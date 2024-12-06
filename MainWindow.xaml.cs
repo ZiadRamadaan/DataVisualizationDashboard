@@ -314,7 +314,7 @@ namespace DataVisualizationDashboard
             // تجميع البيانات
             foreach (DataRow row in dataTable.Rows)
             {
-                string label = row[xColumn].ToString(); // الحصول على الفئة (المحور X)
+                string label = row[xColumn]?.ToString(); // الحصول على الفئة (المحور X)
                 if (string.IsNullOrWhiteSpace(label)) continue; // تجاهل القيم الفارغة
 
                 if (double.TryParse(row[yColumn]?.ToString(), out double value)) // تحويل القيمة
@@ -361,7 +361,13 @@ namespace DataVisualizationDashboard
             var axisX = new LiveCharts.Wpf.Axis
             {
                 Title = xColumn,
-                Labels = xValues // القيم المجمعة
+                Labels = xValues, // القيم المجمعة
+                LabelsRotation = 45, // تدوير القيم لتحسين العرض
+                Separator = new LiveCharts.Wpf.Separator
+                {
+                    Step = 1, // عرض كل القيم بشكل منتظم
+                    IsEnabled = true // تعطيل الخطوط الفاصلة
+                }
             };
             CartesianChart.AxisX.Add(axisX);
 
@@ -370,7 +376,12 @@ namespace DataVisualizationDashboard
             var axisY = new LiveCharts.Wpf.Axis
             {
                 Title = yColumn,
-                LabelFormatter = value => $"{value:N0}" // تنسيق القيم بأرقام صحيحة مع فاصلة
+                MinValue = 0 ,
+                LabelFormatter = value => $"{value:N0}", // تنسيق القيم بأرقام صحيحة مع فاصلة
+                Separator = new LiveCharts.Wpf.Separator
+                {
+                    StrokeThickness = 1 // إزالة الخطوط الفاصلة لمحور Y
+                }
             };
             CartesianChart.AxisY.Add(axisY);
         }
