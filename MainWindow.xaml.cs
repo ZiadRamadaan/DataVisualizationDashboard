@@ -174,6 +174,82 @@ namespace DataVisualizationDashboard
             // تجميع البيانات
             foreach (DataRow row in dataTable.Rows)
             {
+                string label = row[xColumn]?.ToString(); // الحصول على الفئة (اسم العمود X)
+                if (string.IsNullOrWhiteSpace(label)) continue; // تجاهل القيم الفارغة
+
+                if (double.TryParse(row[yColumn]?.ToString(), out double value)) // تحويل القيمة
+                {
+                    if (groupedData.ContainsKey(label))
+                    {
+                        groupedData[label] += value; // تجميع القيم المكررة
+                    }
+                    else
+                    {
+                        groupedData[label] = value; // إضافة قيمة جديدة
+                    }
+                }
+            }
+
+            // ترتيب القيم (اختياري) لضمان عرض القيم بشكل منطقي
+            var sortedData = groupedData.OrderBy(kv => kv.Key).ToList();
+
+            // إنشاء قائمة القيم المجمعة للمحور X و Y
+            List<string> xValues = sortedData.Select(kv => kv.Key).ToList(); // الفئات
+            List<double> yValues = sortedData.Select(kv => kv.Value).ToList(); // القيم المجمعة
+
+            // التأكد من تطابق عدد القيم بين المحورين X وY
+            if (xValues.Count != yValues.Count)
+            {
+                MessageBox.Show("Error: Mismatch between X and Y values!", "Data Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // إنشاء ColumnSeries جديدة للرسم البياني
+            var columnSeries = new LiveCharts.Wpf.ColumnSeries
+            {
+                Title = $"{xColumn} vs {yColumn}",
+                Values = new LiveCharts.ChartValues<double>(yValues), // القيم Y
+                DataLabels = true, // عرض القيم فوق الأعمدة
+                LabelPoint = point => $"{point.Y:N0}" // تنسيق القيم
+            };
+
+            // مسح أي بيانات سابقة في BarChart
+            BarChart.Series.Clear();
+
+            // إضافة السلسلة الجديدة إلى BarChart
+            BarChart.Series.Add(columnSeries);
+
+            // تحديث المحور X بالعناوين
+            BarChart.AxisX.Clear();
+            var axisX = new LiveCharts.Wpf.Axis
+            {
+                Title = xColumn, // عنوان المحور
+                Labels = xValues, // القيم المجمعة للمحور X
+                Separator = new LiveCharts.Wpf.Separator // إضافة تباعد بين القيم
+                {
+                    Step = 1, // خطوة واحدة بين القيم
+                    IsEnabled = false // إخفاء الخطوط بين القيم
+                }
+            };
+            BarChart.AxisX.Add(axisX);
+
+            // تحديث المحور Y (مع التنسيق الاختياري)
+            BarChart.AxisY.Clear();
+            var axisY = new LiveCharts.Wpf.Axis
+            {
+                Title = yColumn,
+                LabelFormatter = value => $"{value:N0}", // تنسيق القيم Y
+                Separator = new LiveCharts.Wpf.Separator() // ضبط التباعد
+            };
+            BarChart.AxisY.Add(axisY);
+        }
+        private void InitializeRowChart(string xColumn, string yColumn)
+        {
+            Dictionary<string, double> groupedData = new Dictionary<string, double>();
+
+            // تجميع البيانات
+            foreach (DataRow row in dataTable.Rows)
+            {
                 string label = row[xColumn].ToString(); // الحصول على الفئة (اسم العمود X)
                 if (string.IsNullOrWhiteSpace(label)) continue; // تجاهل القيم الفارغة
 
@@ -194,41 +270,6 @@ namespace DataVisualizationDashboard
             List<string> xValues = groupedData.Keys.ToList(); // الفئات
             List<double> yValues = groupedData.Values.ToList(); // القيم المجمعة
 
-            // إنشاء ColumnSeries جديدة للرسم البياني
-            var columnSeries = new LiveCharts.Wpf.ColumnSeries
-            {
-                Title = $"{xColumn} vs {yColumn}",
-                Values = new LiveCharts.ChartValues<double>(yValues) // القيم Y
-            };
-
-            // مسح أي بيانات سابقة في BarChart
-            BarChart.Series.Clear();
-
-            // إضافة السلسلة الجديدة إلى BarChart
-            BarChart.Series.Add(columnSeries);
-
-            // تحديث المحور X بالعناوين
-            BarChart.AxisX.Clear();
-            var axisX = new LiveCharts.Wpf.Axis
-            {
-                Title = xColumn, // عنوان المحور
-                Labels = xValues // القيم المجمعة للمحور X
-            };
-            BarChart.AxisX.Add(axisX);
-
-            // تحديث المحور Y (مع التنسيق الاختياري)
-            BarChart.AxisY.Clear();
-            var axisY = new LiveCharts.Wpf.Axis
-            {
-                Title = yColumn,
-                LabelFormatter = value => $"{value:N0}" // تنسيق القيم Y
-            };
-            BarChart.AxisY.Add(axisY);
-        }
-       private void InitializeRowChart(string xColumn, string yColumn)
-        {
-            List<string> xValues = new List<string>();
-            List<double> yValues = new List<double>();
 
             foreach (DataRow row in dataTable.Rows)
             {
