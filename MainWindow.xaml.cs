@@ -450,7 +450,7 @@ namespace DataVisualizationDashboard
                 Separator = new LiveCharts.Wpf.Separator
                 {
                     Step = 1, // عرض كل القيم بشكل منتظم
-                    IsEnabled = false // تعطيل الخطوط الفاصلة
+                    IsEnabled = true // تعطيل الخطوط الفاصلة
                 }
             };
             CartesianChart.AxisX.Add(axisX);
