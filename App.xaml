@@ -1,7 +1,7 @@
 ﻿<Application x:Class="DataVisualizationDashboard.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:DataVisualizationDashboard"
+             xmlns:Icon="http://metro.mahapps.com/winfx/xaml/iconpacks"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
 
@@ -11,7 +11,7 @@
 
 
         <Style x:Key="Title" TargetType="Label">
-            <Setter Property="Foreground" Value="Black" />
+            <Setter Property="Foreground" Value="#c5c6d0" />
             <Setter Property="FontSize" Value="28" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Margin" Value="40 30 0 15" />
@@ -20,7 +20,7 @@
 
         <Style x:Key="menuButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="#FED6CE" />
+            <Setter Property="Foreground" Value="#c5c6d0" />
             <Setter Property="Height" Value="45" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Margin" Value="15 0 15 5" />
@@ -36,8 +36,8 @@
 
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#F7F6F4" />
-                    <Setter Property="Foreground" Value="#FB7657" />
+                    <Setter Property="Background" Value="#65f5fa" />
+                    <Setter Property="Foreground" Value="black" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -49,6 +49,12 @@
             <Setter Property="Margin" Value="20 0 0 2"/>
         </Style>
 
+        <Style x:Key="menuButtonIcon" TargetType="Icon:PackIconMaterial">
+            <Setter Property="Foreground" Value="{Binding Path=Foreground, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Button}}}" />
+            <Setter Property="Margin" Value="25 0 0 0"/>
+            <Setter Property="Width" Value="24"/>
+        </Style>
+
         <Style x:Key="whiteBorder" TargetType="Border">
             <Setter Property="Background" Value="#ffffff" />
             <Setter Property="CornerRadius" Value="15" />
@@ -56,10 +62,10 @@
         </Style>
 
         <Style x:Key="titleText" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource BlackColor}" />
+            <Setter Property="Foreground" Value="#c5c6d0" />
             <Setter Property="FontSize" Value="20" />
             <Setter Property="FontWeight" Value="Bold" />
         </Style>
-        
+
     </Application.Resources>
 </Application>
