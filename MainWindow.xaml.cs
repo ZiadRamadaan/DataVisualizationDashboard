@@ -14,6 +14,7 @@ using Microsoft.Win32;
 using System.Data;
 using System.IO;
 using OfficeOpenXml;
+using System.Reflection.Emit;
 
 namespace DataVisualizationDashboard
 {
@@ -297,62 +298,98 @@ namespace DataVisualizationDashboard
         }
         private void InitializeScatterPlot(string xColumn, string yColumn)
         {
-            // Create lists to store the data for the X and Y axes
-            List<double> xValues = new List<double>();
-            List<double> yValues = new List<double>();
+            Dictionary<string, List<double>> groupedData = new Dictionary<string, List<double>>();
 
-            // Extract values from the DataTable
+            // معالجة البيانات من DataTable
             foreach (DataRow row in dataTable.Rows)
             {
-                if (double.TryParse(row[xColumn].ToString(), out double xValue) &&
-                    double.TryParse(row[yColumn].ToString(), out double yValue))
+                string label = row[xColumn]?.ToString(); // الحصول على الفئة (اسم العمود X)
+                if (string.IsNullOrWhiteSpace(label)) continue; // تجاهل القيم الفارغة
+
+                if (double.TryParse(row[yColumn]?.ToString(), out double value)) // تحويل القيمة Y
                 {
-                    xValues.Add(xValue);
+                    if (!groupedData.ContainsKey(label))
+                    {
+                        groupedData[label] = new List<double>(); // إضافة فئة جديدة للمجموعة
+                    }
+                    groupedData[label].Add(value); // إضافة القيمة إلى الفئة المقابلة
+                }
+            }
+
+            // ترتيب القيم (اختياري) لضمان عرض القيم بشكل منطقي
+            var sortedData = groupedData.OrderBy(kv => kv.Key).ToList();
+
+            // إنشاء قائمة القيم المجمعة للمحور X و Y
+            List<string> xLabels = sortedData.Select(kv => kv.Key).ToList(); // الفئات
+            List<double> yValues = sortedData.Select(kv => kv.Value.Average()).ToList(); // القيم المجمعة (متوسط لكل فئة)
+
+            // تخزين التسميات النصية كأرقام مع التأكد من تجنب التكرار
+            Dictionary<string, int> xCategoryMap = new Dictionary<string, int>();
+            int categoryIndex = 0;
+
+            // معالجة البيانات من DataTable
+            foreach (DataRow row in dataTable.Rows)
+            {
+                string xValue = row[xColumn].ToString(); // قيمة X النصية
+
+                // إضافة التسميات النصية لمحور X
+                if (!xCategoryMap.ContainsKey(xValue))
+                {
+                    xCategoryMap[xValue] = categoryIndex++;
+                    xLabels.Add(xValue); // حفظ التسمية
+                }
+
+                // قراءة قيمة Y العددية
+                if (double.TryParse(row[yColumn]?.ToString(), out double yValue))
+                {
                     yValues.Add(yValue);
                 }
             }
 
-            // Create a ScatterSeries for the scatter plot
+            // إنشاء ScatterSeries للرسمة
             var scatterSeries = new LiveCharts.Wpf.ScatterSeries
             {
-                Title = $"{yColumn} / {xColumn}",
+                Title = $"{yColumn} vs {xColumn}",
                 Values = new LiveCharts.ChartValues<LiveCharts.Defaults.ObservablePoint>(
-                    xValues.Zip(yValues, (x, y) => new LiveCharts.Defaults.ObservablePoint(x, y))),
-                // Scatter points will have a default shape, which is a circle
-                Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#65f5fa")), // Customize the color
-                Stroke = Brushes.Transparent,         // Customize the border of points
-                StrokeThickness = 1             // Customize the border thickness
+                    xCategoryMap.Values.Zip(yValues, (x, y) => new LiveCharts.Defaults.ObservablePoint(x, y))
+                ),
+                Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#65f5fa")), // لون النقاط
+                Stroke = Brushes.Transparent,
+                StrokeThickness = 1
             };
 
-            // Clear any previous data on the ScatterChart
+            // تحديث ScatterChart
             ScatterChart.Series.Clear();
-
-            // Add the new series to the ScatterChart
             ScatterChart.Series.Add(scatterSeries);
 
-            // Update the X-axis with appropriate formatting
+            // إعداد المحور X مع التسميات النصية
             ScatterChart.AxisX.Clear();
             var axisX = new LiveCharts.Wpf.Axis
             {
                 Title = xColumn,
-                LabelFormatter = value => $"{value:N2}", // Format X-axis as numeric
-                /* Separator = new LiveCharts.Wpf.Separator
-                 {
-                     IsEnabled = false // تعطيل الخطوط الفاصلة
-                 }*/
+                Labels = xLabels, // استخدام التسميات النصية
+                LabelsRotation = 45, 
+                Separator = new LiveCharts.Wpf.Separator
+                {
+                    Step = 1,
+                    StrokeThickness = 0.5,
+                    Stroke = Brushes.Gray
+                }
             };
             ScatterChart.AxisX.Add(axisX);
 
-            // Update the Y-axis with appropriate formatting
+            // إعداد المحور Y
             ScatterChart.AxisY.Clear();
             var axisY = new LiveCharts.Wpf.Axis
             {
                 Title = yColumn,
-                LabelFormatter = value => $"{value:N2}",// Format Y-axis as numeric
-                /*Separator = new LiveCharts.Wpf.Separator
+                MinValue = 0, // ضمان بدء المحور من الصفر
+                LabelFormatter = value => $"{value:N2}", // تنسيق الأرقام
+                Separator = new LiveCharts.Wpf.Separator
                 {
-                    StrokeThickness = 0 // إزالة الخطوط الفاصلة لمحور Y
-                }*/
+                    StrokeThickness = 0.5,
+                    Stroke = Brushes.Gray
+                }
             };
             ScatterChart.AxisY.Add(axisY);
         }
@@ -469,8 +506,8 @@ namespace DataVisualizationDashboard
                 {
                     Title = data.Key,
                     Values = new LiveCharts.ChartValues<double> { data.Value },
-                    DataLabels = true,
-                    LabelPoint = chartPoint => $"{chartPoint.Y} ({chartPoint.Participation:P})"
+                    DataLabels = true, // إظهار التسميات
+                    LabelPoint = chartPoint => $"{data.Key}:{chartPoint.Y:N0} ({chartPoint.Participation:P})" // عرض اسم الشريحة مع قيمتها
                 };
 
                 // اختيار لون من الألوان المحددة
@@ -487,7 +524,6 @@ namespace DataVisualizationDashboard
             }
         }
 
-
         private void Button_Click(object sender, RoutedEventArgs e)
         {
 
@@ -496,8 +532,10 @@ namespace DataVisualizationDashboard
         {
 
         }
-        private void PowerIcon_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void PowerIcon_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+
         {
+            e.Handled = true;
             this.Close();
         }
 
@@ -532,119 +570,5 @@ namespace DataVisualizationDashboard
             // Restore original charts setup
             RestoreInitialCharts();
         }
-
-       /* private void RestoreInitialCharts()
-        {
-            // Reinitialize the line chart
-            CartesianChart.Series.Clear();
-            CartesianChart.AxisX.Clear();
-            CartesianChart.AxisY.Clear();
-
-            CartesianChart.Series.Add(new LiveCharts.Wpf.LineSeries
-            {
-                Values = new LiveCharts.ChartValues<double> { 50, 120, 110, 160, 150, 180, 120, 170, 165, 180 },
-                Fill = Brushes.Transparent,
-                StrokeThickness = 2,
-                PointGeometrySize = 0,
-                Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00bf63"))
-            });
-
-            CartesianChart.AxisX.Add(new LiveCharts.Wpf.Axis
-            {
-                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#90A3B2")),
-                Separator = new LiveCharts.Wpf.Separator
-                {
-                    StrokeThickness = 0,
-                    Step = 2
-                }
-            });
-
-            CartesianChart.AxisY.Add(new LiveCharts.Wpf.Axis
-            {
-                MinValue = 40,
-                MaxValue = 350,
-                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#90A3B2")),
-                Separator = new LiveCharts.Wpf.Separator
-                {
-                    StrokeThickness = 0
-                }
-            });
-
-            // Reinitialize the bar chart
-            BarChart.Series.Clear();
-            BarChart.AxisX.Clear();
-            BarChart.AxisY.Clear();
-
-            BarChart.Series.Add(new LiveCharts.Wpf.ColumnSeries
-            {
-                Values = new LiveCharts.ChartValues<double> { 6.5, 3, 6, 5 },
-                MaxColumnWidth = 20,
-                Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1ddf82"))
-            });
-
-            BarChart.AxisX.Add(new LiveCharts.Wpf.Axis
-            {
-                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#90A3B2")),
-                Separator = new LiveCharts.Wpf.Separator
-                {
-                    StrokeThickness = 0,
-                    Step = 1
-                }
-            });
-
-            BarChart.AxisY.Add(new LiveCharts.Wpf.Axis
-            {
-                MinValue = 0,
-                MaxValue = 8,
-                Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#90A3B2")),
-                Separator = new LiveCharts.Wpf.Separator
-                {
-                    StrokeThickness = 0,
-                    Step = 2
-                }
-            });
-
-            // Reinitialize the pie chart
-            PieChart.Series.Clear();
-            PieChart.Series.Add(new LiveCharts.Wpf.PieSeries
-            {
-                Values = new LiveCharts.ChartValues<double> { 3 },
-                DataLabels = true,
-                Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#383a49")),
-                Foreground = Brushes.White,
-                Stroke = Brushes.Transparent
-            });
-            PieChart.Series.Add(new LiveCharts.Wpf.PieSeries
-            {
-                Values = new LiveCharts.ChartValues<double> { 4 },
-                DataLabels = true,
-                Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4d5062")),
-                Foreground = Brushes.White,
-                Stroke = Brushes.Transparent
-            });
-            PieChart.Series.Add(new LiveCharts.Wpf.PieSeries
-            {
-                Values = new LiveCharts.ChartValues<double> { 6 },
-                DataLabels = true,
-                Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#036d3a")),
-                Foreground = Brushes.White,
-                Stroke = Brushes.Transparent
-            });
-            PieChart.Series.Add(new LiveCharts.Wpf.PieSeries
-            {
-                Values = new LiveCharts.ChartValues<double> { 2 },
-                DataLabels = true,
-                Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#6237b6")),
-                Foreground = Brushes.White,
-                Stroke = Brushes.Transparent
-            });
-
-            // Reinitialize the scatter chart
-            ScatterChart.Series.Clear();
-            ScatterChart.AxisX.Clear();
-            ScatterChart.AxisY.Clear();
-
-        }*/
-
     }
 }
