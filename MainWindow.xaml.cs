@@ -18,7 +18,6 @@ using System.Reflection.Emit;
 
 namespace DataVisualizationDashboard
 {
-
     public partial class MainWindow : Window
     {
         private DataTable dataTable;
@@ -36,7 +35,6 @@ namespace DataVisualizationDashboard
             ChartSelection.SelectionChanged += ChartSelection_SelectionChanged; // Bind event
         }
         public Func<ChartPoint, string> PointLabel { get; set; }
-
         private void Chart_OnDataClick(object sender, ChartPoint chartpoint)
         {
             var chart = (LiveCharts.Wpf.PieChart)chartpoint.ChartView;
@@ -48,7 +46,6 @@ namespace DataVisualizationDashboard
             var selectedSeries = (PieSeries)chartpoint.SeriesView;
             selectedSeries.PushOut = 8;
         }
-
         private void Border_MouseDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ChangedButton == MouseButton.Left)
@@ -78,7 +75,6 @@ namespace DataVisualizationDashboard
                 }
             }
         }
-
         private void UploadData_Click(object sender, RoutedEventArgs e)
         {
             var openFileDialog = new OpenFileDialog
@@ -94,7 +90,6 @@ namespace DataVisualizationDashboard
                 PopulateDropdowns();
             }
         }
-
         private DataTable LoadExcelFile(string filePath)
         {
             var dt = new DataTable();
@@ -120,7 +115,6 @@ namespace DataVisualizationDashboard
         }
 
         private string selectedChartType; // Class-level variable to track the selected chart type
-
         private void ChartSelection_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (ChartSelection.SelectedItem == null)
@@ -212,85 +206,80 @@ namespace DataVisualizationDashboard
                 MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
-
         private void InitializeBarChart(string xColumn, string yColumn)
         {
-            // استخدام Dictionary لتجميع القيم حسب الفئة (المحور X)
+           
             Dictionary<string, double> groupedData = new Dictionary<string, double>();
 
-            // تجميع البيانات
             foreach (DataRow row in dataTable.Rows)
             {
-                string label = row[xColumn]?.ToString(); // الحصول على الفئة (اسم العمود X)
-                if (string.IsNullOrWhiteSpace(label)) continue; // تجاهل القيم الفارغة
+                string label = row[xColumn]?.ToString(); 
+                if (string.IsNullOrWhiteSpace(label)) continue; 
 
-                if (double.TryParse(row[yColumn]?.ToString(), out double value)) // تحويل القيمة
+                if (double.TryParse(row[yColumn]?.ToString(), out double value)) 
                 {
                     if (groupedData.ContainsKey(label))
                     {
-                        groupedData[label] += value; // تجميع القيم المكررة
+                        groupedData[label] += value; 
                     }
                     else
                     {
-                        groupedData[label] = value; // إضافة قيمة جديدة
+                        groupedData[label] = value; 
                     }
                 }
             }
 
-            // ترتيب القيم (اختياري) لضمان عرض القيم بشكل منطقي
+           
             var sortedData = groupedData.OrderBy(kv => kv.Key).ToList();
 
-            // إنشاء قائمة القيم المجمعة للمحور X و Y
-            List<string> xValues = sortedData.Select(kv => kv.Key).ToList(); // الفئات
-            List<double> yValues = sortedData.Select(kv => kv.Value).ToList(); // القيم المجمعة
+            
+            List<string> xValues = sortedData.Select(kv => kv.Key).ToList(); 
+            List<double> yValues = sortedData.Select(kv => kv.Value).ToList(); 
 
-            // التأكد من تطابق عدد القيم بين المحورين X وY
+            
             if (xValues.Count != yValues.Count)
             {
                 MessageBox.Show("Error: Mismatch between X and Y values!", "Data Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
 
-            // إنشاء ColumnSeries جديدة للرسم البياني
+           
             var columnSeries = new LiveCharts.Wpf.ColumnSeries
             {
                 Title = $"{xColumn} vs {yColumn}",
-                Values = new LiveCharts.ChartValues<double>(yValues), // القيم Y
-                DataLabels = true, // عرض القيم فوق الأعمدة
-                LabelPoint = point => $"{point.Y:N0}", // تنسيق القيم
-                Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1ddf82")) // Set custom color
+                Values = new LiveCharts.ChartValues<double>(yValues), 
+                DataLabels = true, 
+                LabelPoint = point => $"{point.Y:N0}", 
+                Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1ddf82"))
             };
 
-            // مسح أي بيانات سابقة في BarChart
+            
             BarChart.Series.Clear();
 
-            // إضافة السلسلة الجديدة إلى BarChart
+            
             BarChart.Series.Add(columnSeries);
 
-            // تحديث المحور X بالعناوين
             BarChart.AxisX.Clear();
             var axisX = new LiveCharts.Wpf.Axis
             {
-                Title = xColumn, // عنوان المحور
-                Labels = xValues, // القيم المجمعة للمحور X
-                Separator = new LiveCharts.Wpf.Separator // إضافة تباعد بين القيم
+                Title = xColumn, 
+                Labels = xValues, 
+                Separator = new LiveCharts.Wpf.Separator 
                 {
-                    Step = 1, // خطوة واحدة بين القيم
-                    IsEnabled = false // إخفاء الخطوط بين القيم
+                    Step = 1, 
+                    IsEnabled = false 
                 }
             };
             BarChart.AxisX.Add(axisX);
 
-            // تحديث المحور Y (مع التنسيق الاختياري)
             BarChart.AxisY.Clear();
             var axisY = new LiveCharts.Wpf.Axis
             {
                 Title = yColumn,
-                LabelFormatter = value => $"{value:N0}", // تنسيق القيم Y
-                Separator = new LiveCharts.Wpf.Separator() // ضبط التباعد
+                LabelFormatter = value => $"{value:N0}", 
+                Separator = new LiveCharts.Wpf.Separator() 
                 {
-                    IsEnabled = true, // إخفاء الخطوط بين القيم
+                    IsEnabled = true, 
                     StrokeThickness = 0.5
                 }
             };
@@ -300,74 +289,65 @@ namespace DataVisualizationDashboard
         {
             Dictionary<string, List<double>> groupedData = new Dictionary<string, List<double>>();
 
-            // معالجة البيانات من DataTable
             foreach (DataRow row in dataTable.Rows)
             {
-                string label = row[xColumn]?.ToString(); // الحصول على الفئة (اسم العمود X)
-                if (string.IsNullOrWhiteSpace(label)) continue; // تجاهل القيم الفارغة
+                string label = row[xColumn]?.ToString();
+                if (string.IsNullOrWhiteSpace(label)) continue; 
 
-                if (double.TryParse(row[yColumn]?.ToString(), out double value)) // تحويل القيمة Y
+                if (double.TryParse(row[yColumn]?.ToString(), out double value)) 
                 {
                     if (!groupedData.ContainsKey(label))
                     {
-                        groupedData[label] = new List<double>(); // إضافة فئة جديدة للمجموعة
+                        groupedData[label] = new List<double>(); 
                     }
-                    groupedData[label].Add(value); // إضافة القيمة إلى الفئة المقابلة
+                    groupedData[label].Add(value); 
                 }
             }
 
-            // ترتيب القيم (اختياري) لضمان عرض القيم بشكل منطقي
             var sortedData = groupedData.OrderBy(kv => kv.Key).ToList();
 
-            // إنشاء قائمة القيم المجمعة للمحور X و Y
-            List<string> xLabels = sortedData.Select(kv => kv.Key).ToList(); // الفئات
-            List<double> yValues = sortedData.Select(kv => kv.Value.Average()).ToList(); // القيم المجمعة (متوسط لكل فئة)
+            List<string> xLabels = sortedData.Select(kv => kv.Key).ToList(); 
+            List<double> yValues = sortedData.Select(kv => kv.Value.Average()).ToList(); 
 
-            // تخزين التسميات النصية كأرقام مع التأكد من تجنب التكرار
             Dictionary<string, int> xCategoryMap = new Dictionary<string, int>();
             int categoryIndex = 0;
 
-            // معالجة البيانات من DataTable
             foreach (DataRow row in dataTable.Rows)
             {
-                string xValue = row[xColumn].ToString(); // قيمة X النصية
+                string xValue = row[xColumn].ToString(); 
 
-                // إضافة التسميات النصية لمحور X
                 if (!xCategoryMap.ContainsKey(xValue))
                 {
                     xCategoryMap[xValue] = categoryIndex++;
-                    xLabels.Add(xValue); // حفظ التسمية
+                    xLabels.Add(xValue); 
                 }
 
-                // قراءة قيمة Y العددية
+              
                 if (double.TryParse(row[yColumn]?.ToString(), out double yValue))
                 {
                     yValues.Add(yValue);
                 }
             }
 
-            // إنشاء ScatterSeries للرسمة
             var scatterSeries = new LiveCharts.Wpf.ScatterSeries
             {
                 Title = $"{yColumn} vs {xColumn}",
                 Values = new LiveCharts.ChartValues<LiveCharts.Defaults.ObservablePoint>(
                     xCategoryMap.Values.Zip(yValues, (x, y) => new LiveCharts.Defaults.ObservablePoint(x, y))
                 ),
-                Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#65f5fa")), // لون النقاط
+                Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#65f5fa")), 
                 Stroke = Brushes.Transparent,
                 StrokeThickness = 1
             };
 
-            // تحديث ScatterChart
             ScatterChart.Series.Clear();
             ScatterChart.Series.Add(scatterSeries);
 
-            // إعداد المحور X مع التسميات النصية
             ScatterChart.AxisX.Clear();
             var axisX = new LiveCharts.Wpf.Axis
             {
                 Title = xColumn,
-                Labels = xLabels, // استخدام التسميات النصية
+                Labels = xLabels, 
                 LabelsRotation = 45, 
                 Separator = new LiveCharts.Wpf.Separator
                 {
@@ -378,13 +358,12 @@ namespace DataVisualizationDashboard
             };
             ScatterChart.AxisX.Add(axisX);
 
-            // إعداد المحور Y
             ScatterChart.AxisY.Clear();
             var axisY = new LiveCharts.Wpf.Axis
             {
                 Title = yColumn,
-                MinValue = 0, // ضمان بدء المحور من الصفر
-                LabelFormatter = value => $"{value:N2}", // تنسيق الأرقام
+                MinValue = 0, 
+                LabelFormatter = value => $"{value:N2}",
                 Separator = new LiveCharts.Wpf.Separator
                 {
                     StrokeThickness = 0.5,
@@ -395,33 +374,29 @@ namespace DataVisualizationDashboard
         }
         private void InitializeLineChart(string xColumn, string yColumn)
         {
-            // استخدام Dictionary لتجميع القيم حسب الفئات (المحور X)
             Dictionary<string, double> groupedData = new Dictionary<string, double>();
 
-            // تجميع البيانات
             foreach (DataRow row in dataTable.Rows)
             {
-                string label = row[xColumn]?.ToString(); // الحصول على الفئة (المحور X)
-                if (string.IsNullOrWhiteSpace(label)) continue; // تجاهل القيم الفارغة
+                string label = row[xColumn]?.ToString();
+                if (string.IsNullOrWhiteSpace(label)) continue; 
 
-                if (double.TryParse(row[yColumn]?.ToString(), out double value)) // تحويل القيمة
+                if (double.TryParse(row[yColumn]?.ToString(), out double value)) 
                 {
                     if (groupedData.ContainsKey(label))
                     {
-                        groupedData[label] += value; // تجميع القيم المكررة
+                        groupedData[label] += value; 
                     }
                     else
                     {
-                        groupedData[label] = value; // إضافة قيمة جديدة
+                        groupedData[label] = value; 
                     }
                 }
             }
 
-            // استخراج القيم المجمعة والمرتبة
             List<string> xValues = groupedData.Select(kv => kv.Key).ToList();
             List<double> yValues = groupedData.Select(kv => kv.Value).ToList();
 
-            // إنشاء LineSeries جديدة
             var lineSeries = new LiveCharts.Wpf.LineSeries
             {
                 Title = $"{xColumn} vs {yColumn}",
@@ -431,75 +406,68 @@ namespace DataVisualizationDashboard
                 PointGeometrySize = 5 // حجم النقاط على الخط
             };
 
-            // إعداد لون الخط 
             lineSeries.Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00bf63"));
 
-            // مسح البيانات القديمة من الرسم
             CartesianChart.Series.Clear();
 
-            // إضافة السلسلة الجديدة
             CartesianChart.Series.Add(lineSeries);
 
-            // إعداد المحور X
             CartesianChart.AxisX.Clear();
             var axisX = new LiveCharts.Wpf.Axis
             {
                 Title = xColumn,
-                Labels = xValues, // القيم المجمعة
-                LabelsRotation = 45, // تدوير القيم لتحسين العرض
+                Labels = xValues,
+                LabelsRotation = 45, 
                 Separator = new LiveCharts.Wpf.Separator
                 {
-                    Step = 1, // عرض كل القيم بشكل منتظم
-                    IsEnabled = true // تعطيل الخطوط الفاصلة
+                    Step = 1, 
+                    IsEnabled = true 
                 }
             };
             CartesianChart.AxisX.Add(axisX);
 
-            // إعداد المحور Y مع تنسيق القيم
+            
             CartesianChart.AxisY.Clear();
             var axisY = new LiveCharts.Wpf.Axis
             {
                 Title = yColumn,
                 MinValue = 0,
-                LabelFormatter = value => $"{value:N0}", // تنسيق القيم بأرقام صحيحة مع فاصلة
+                LabelFormatter = value => $"{value:N0}",
                 Separator = new LiveCharts.Wpf.Separator
                 {
-                    StrokeThickness = 0.5 // إزالة الخطوط الفاصلة لمحور Y
+                    StrokeThickness = 0.5 
                 }
             };
             CartesianChart.AxisY.Add(axisY);
         }
         private void InitializePieChart(string xColumn, string yColumn)
         {
-            // تجميع البيانات في Dictionary
+            
             Dictionary<string, double> aggregatedData = new Dictionary<string, double>();
 
             foreach (DataRow row in dataTable.Rows)
             {
                 string label = row[xColumn]?.ToString();
-                if (string.IsNullOrWhiteSpace(label)) continue; // تجاهل القيم الفارغة
+                if (string.IsNullOrWhiteSpace(label)) continue; 
 
                 if (double.TryParse(row[yColumn]?.ToString(), out double value))
                 {
                     if (aggregatedData.ContainsKey(label))
                     {
-                        aggregatedData[label] += value; // جمع القيم المكررة
+                        aggregatedData[label] += value; 
                     }
                     else
                     {
-                        aggregatedData[label] = value; // إدخال قيمة جديدة
+                        aggregatedData[label] = value; 
                     }
                 }
             }
 
-            // مسح السلسلة السابقة
             PieChart.Series.Clear();
 
-            // الألوان المحددة
             string[] colors = { "#6237b6", "#4d5062", "#036d3a", "#383a49" };
             int colorIndex = 0;
 
-            // إنشاء السلسلة الجديدة باستخدام البيانات المجمعة
             foreach (var data in aggregatedData)
             {
                 var pieSeries = new LiveCharts.Wpf.PieSeries
@@ -510,20 +478,15 @@ namespace DataVisualizationDashboard
                     LabelPoint = chartPoint => $"{data.Key}:{chartPoint.Y:N0} ({chartPoint.Participation:P})" // عرض اسم الشريحة مع قيمتها
                 };
 
-                // اختيار لون من الألوان المحددة
                 pieSeries.Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString(colors[colorIndex]));
 
-                // تحديث الفهرس للتنقل بين الألوان
                 colorIndex = (colorIndex + 1) % colors.Length;
 
-                // Set the Stroke to transparent
                 pieSeries.Stroke = new SolidColorBrush(Colors.Transparent); // Transparent stroke
 
-                // إضافة السلسلة إلى الرسم البياني
                 PieChart.Series.Add(pieSeries);
             }
         }
-
         private void Button_Click(object sender, RoutedEventArgs e)
         {
 
@@ -538,12 +501,10 @@ namespace DataVisualizationDashboard
             e.Handled = true;
             this.Close();
         }
-
         private void GridSplitter_DragDelta(object sender, System.Windows.Controls.Primitives.DragDeltaEventArgs e)
         {
 
         }
-
         private void ChartSelection_SelectionChanged_1(object sender, SelectionChangedEventArgs e)
         {
 

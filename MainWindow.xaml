@@ -51,15 +51,15 @@
 
                     <!-- Power Icon at the bottom -->
                     <Icon:PackIconMaterial 
-    Kind="Power" 
-    Foreground="#c5c6d0"
-    Style="{StaticResource menuButtonIcon}" 
-    HorizontalAlignment="Left" 
-    Margin="0,10,0,10" 
-    Cursor="Hand" 
-    PreviewMouseLeftButtonDown="PowerIcon_MouseLeftButtonDown" 
-    Width="92" 
-    Height="20"/>
+                        Kind="Power" 
+                        Foreground="#c5c6d0"
+                        Style="{StaticResource menuButtonIcon}" 
+                        HorizontalAlignment="Left" 
+                        Margin="0,10,0,10" 
+                        Cursor="Hand" 
+                        PreviewMouseLeftButtonDown="PowerIcon_MouseLeftButtonDown" 
+                        Width="92" 
+                        Height="20"/>   
 
 
                 </StackPanel>
@@ -91,6 +91,8 @@
 
                         <lvc:CartesianChart.AxisY>
                             <lvc:Axis MinValue="40" MaxValue="350" Foreground="#90A3B2" ShowLabels="True">
+
+                                
                                 <lvc:Axis.Separator>
                                     <lvc:Separator StrokeThickness="0"/>
                                 </lvc:Axis.Separator>
