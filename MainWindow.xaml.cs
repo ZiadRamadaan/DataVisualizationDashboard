@@ -30,16 +30,14 @@ namespace DataVisualizationDashboard
 
             DataContext = this;
 
-            // Populate ChartSelection with available chart types
             ChartSelection.ItemsSource = new List<string> { "Bar Chart", "Line Chart", "Pie Chart", "Scatter Plot", "All" };
-            ChartSelection.SelectionChanged += ChartSelection_SelectionChanged; // Bind event
+            ChartSelection.SelectionChanged += ChartSelection_SelectionChanged; 
         }
         public Func<ChartPoint, string> PointLabel { get; set; }
         private void Chart_OnDataClick(object sender, ChartPoint chartpoint)
         {
             var chart = (LiveCharts.Wpf.PieChart)chartpoint.ChartView;
 
-            //clear selected slice.
             foreach (PieSeries series in chart.Series)
                 series.PushOut = 0;
 
@@ -114,7 +112,7 @@ namespace DataVisualizationDashboard
             return dt;
         }
 
-        private string selectedChartType; // Class-level variable to track the selected chart type
+        private string selectedChartType; 
         private void ChartSelection_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (ChartSelection.SelectedItem == null)
@@ -123,7 +121,7 @@ namespace DataVisualizationDashboard
                 return;
             }
 
-            selectedChartType = ChartSelection.SelectedItem.ToString(); // Store the selected chart type
+            selectedChartType = ChartSelection.SelectedItem.ToString(); 
 
         }
         private void PopulateDropdowns()
@@ -131,7 +129,7 @@ namespace DataVisualizationDashboard
             var numericColumns = new List<string>();
             var allColumns = new List<string>();
 
-            // Separate numeric and non-numeric columns
+           
             foreach (DataColumn column in dataTable.Columns)
             {
                 bool isNumeric = true;
@@ -153,7 +151,7 @@ namespace DataVisualizationDashboard
                 allColumns.Add(column.ColumnName);
             }
 
-            // Assign to dropdowns
+           
             LabelSelection.ItemsSource = allColumns; // All columns for labels
             ValueSelection.ItemsSource = numericColumns; // Only numeric columns for values
         }
@@ -171,7 +169,7 @@ namespace DataVisualizationDashboard
             try
             {
 
-                // Generate the selected chart type
+               
                 switch (selectedChartType)
                 {
                     case "Bar Chart":
@@ -400,10 +398,10 @@ namespace DataVisualizationDashboard
             var lineSeries = new LiveCharts.Wpf.LineSeries
             {
                 Title = $"{xColumn} vs {yColumn}",
-                Values = new LiveCharts.ChartValues<double>(yValues), // القيم Y
-                Fill = System.Windows.Media.Brushes.Transparent, // عدم تلوين المساحة تحت الخط
-                StrokeThickness = 3, // سمك الخط
-                PointGeometrySize = 5 // حجم النقاط على الخط
+                Values = new LiveCharts.ChartValues<double>(yValues), 
+                Fill = System.Windows.Media.Brushes.Transparent,
+                StrokeThickness = 3, 
+                PointGeometrySize = 5
             };
 
             lineSeries.Stroke = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00bf63"));
@@ -474,8 +472,8 @@ namespace DataVisualizationDashboard
                 {
                     Title = data.Key,
                     Values = new LiveCharts.ChartValues<double> { data.Value },
-                    DataLabels = true, // إظهار التسميات
-                    LabelPoint = chartPoint => $"{data.Key}:{chartPoint.Y:N0} ({chartPoint.Participation:P})" // عرض اسم الشريحة مع قيمتها
+                    DataLabels = true, 
+                    LabelPoint = chartPoint => $"{data.Key}:{chartPoint.Y:N0} ({chartPoint.Participation:P})" 
                 };
 
                 pieSeries.Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString(colors[colorIndex]));
